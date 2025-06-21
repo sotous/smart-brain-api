@@ -1,21 +1,69 @@
-const Clarifai = require('clarifai');
+const {ClarifaiStub, grpc} = require("clarifai-nodejs-grpc");
 
-//You must add your own API key here from Clarifai. 
-const app = new Clarifai.App({
- apiKey: 'YOUR API KEY HERE' 
-});
+const USER_ID = process.env.CLARIFAI_USER_ID;
+const APP_ID = process.env.CLARIFAI_APP_ID;
+const PAT = process.env.CLARIFAI_PAT;
+const MODEL_ID = process.env.CLARIFAI_MODEL_ID;
+const MODEL_VERSION_ID = process.env.CLARIFAI_MODEL_VERSION_ID;
+
+const stub = ClarifaiStub.grpc();
 
 const handleApiCall = (req, res) => {
-  // HEADS UP! Sometimes the Clarifai Models can be down or not working as they are constantly getting updated.
-  // A good way to check if the model you are using is up, is to check them on the clarifai website. For example,
-  // for the Face Detect Mode: https://www.clarifai.com/models/face-detection
-  // If that isn't working, then that means you will have to wait until their servers are back up. 
+  const metadata = new grpc.Metadata();
+  metadata.set("authorization", "Key " + PAT);
 
-  app.models.predict('face-detection', req.body.input)
-    .then(data => {
-      res.json(data);
-    })
-    .catch(err => res.status(400).json('unable to work with API'))
+  stub.PostModelOutputs(
+    {
+        user_app_id: {
+            "user_id": USER_ID,
+            "app_id": APP_ID
+        },
+        model_id: MODEL_ID,
+        version_id: MODEL_VERSION_ID, // This is optional. Defaults to the latest model version
+        inputs: [
+            {
+                data: {
+                    image: {
+                        url: req.body.input,
+                        // base64: imageBytes,
+                        allow_duplicate_url: true
+                    }
+                }
+            }
+        ]
+    },
+    metadata,
+    (err, response) => {
+        if (err) {
+            throw new Error(err);
+        }
+
+        if (response.status.code !== 10000) {
+            throw new Error("Post model outputs failed, status: " + response.status.description);
+        }
+
+        const regions = response.outputs[0].data.regions;
+
+        regions.forEach(region => {
+            // Accessing and rounding the bounding box values
+            const boundingBox = region.region_info.bounding_box;
+            const topRow = boundingBox.top_row.toFixed(3);
+            const leftCol = boundingBox.left_col.toFixed(3);
+            const bottomRow = boundingBox.bottom_row.toFixed(3);
+            const rightCol = boundingBox.right_col.toFixed(3);
+
+            region.data.concepts.forEach(concept => {
+                // Accessing and rounding the concept value
+                const name = concept.name;
+                const value = concept.value.toFixed(4);
+
+                console.log(`${name}: ${value} BBox: ${topRow}, ${leftCol}, ${bottomRow}, ${rightCol}`);
+            });
+        });
+
+        res.json(response);
+    }
+  );
 }
 
 const handleImage = (req, res, db) => {
