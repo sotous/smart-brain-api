@@ -2,7 +2,7 @@ const {ClarifaiStub, grpc} = require("clarifai-nodejs-grpc");
 
 const USER_ID = process.env.CLARIFAI_USER_ID;
 const APP_ID = process.env.CLARIFAI_APP_ID;
-const PAT = process.env.CLARIFAI_PAT;
+const PAT = process.env.CLARIFAI_PERSONAL_ACCESS_TOKEN;
 const MODEL_ID = process.env.CLARIFAI_MODEL_ID;
 const MODEL_VERSION_ID = process.env.CLARIFAI_MODEL_VERSION_ID;
 
