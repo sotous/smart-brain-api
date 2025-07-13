@@ -1,0 +1,9 @@
+BEGIN TRANSACTION;
+
+CREATE TABLE login (
+    id SERIAL PRIMARY KEY,
+    hash VARCHAR(255) NOT NULL,
+    email text NOT NULL UNIQUE
+);
+
+COMMIT;
