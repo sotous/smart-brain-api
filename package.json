@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "main": "script.js",
   "scripts": {
-    "start": "nodemon --env-file=.env server.js"
+    "start": "nodemon server.js",
+    "debug": "nodemon --inspect=0.0.0.0:9229 server.js",
+    "docker:start": "docker compose up --build",
+    "docker:stop": "docker compose down",
+    "docker:debug": "NODE_CMD='npm run debug' docker compose up --build"
   },
   "keywords": [],
   "author": "",
