@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+
+  #Backend API
+  smart-brain-api:
+    container_name: backend
+    build: ./
+    command: ${NODE_CMD:-npm start}
+    working_dir: /usr/src/smart-brain-api
+    environment:
+      POSTGRES_URI: postgres://soto:secret@postgres:5432/smart-brain-docker
+      REDIS_HOST: redis://redis:6379
+      CLARIFAI_USER_ID: clarifai
+      CLARIFAI_APP_ID: main
+      CLARIFAI_PERSONAL_ACCESS_TOKEN: 8fe1efaf35b34935b2a11678e376d5d0
+      CLARIFAI_MODEL_ID: face-detection
+      CLARIFAI_MODEL_VERSION_ID: 6dc7e46bc9124c5c8824be4822abe105
+    ports:
+      - "3000:3000"
+      - "9229:9229" # Debugging port
+    volumes:
+      - ./:/usr/src/smart-brain-api
+
+  # Postgres
+  postgres:
+    environment:
+      POSTGRES_USER: soto
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: smart-brain-docker
+      POSTGRES_HOST: postgres
+    build: ./postgres
+    ports:
+      - "5433:5432"
+
+  # Redis
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
