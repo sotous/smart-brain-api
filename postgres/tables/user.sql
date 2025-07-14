@@ -4,6 +4,8 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email text NOT NULL UNIQUE,
+    pet VARCHAR(50),
+    age INT,
     entries BIGINT DEFAULT 0,
     joined TIMESTAMP NOT NULL
 );
