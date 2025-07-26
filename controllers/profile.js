@@ -27,7 +27,25 @@ const handleProfileUpdate = (req, res, db) => {
     .catch(err => res.status(400).json('error updating user'))
 }
 
+const uploadProfileImage = async (req, res, db) => {
+  const { id } = req.params;
+
+  try {
+    const existingUser = await db.select('*').from('users').where({ id }).first();  
+    if (!existingUser) {
+      return res.status(400).json('User not found');
+    }
+    return res.json({
+      message: 'File uploaded successfully!',
+      filePath: req.file.path 
+    });
+  } catch (err) {
+    return res.status(400).json('Error getting user');
+  }
+}
+
 module.exports = {
   handleProfileGet,
-  handleProfileUpdate
+  handleProfileUpdate,
+  uploadProfileImage
 }
