@@ -9,6 +9,7 @@ const signin = require('./controllers/signin');
 const profile = require('./controllers/profile');
 const image = require('./controllers/image');
 const auth = require('./controllers/authorization');
+const upload = require('./helpers/upload');
 const db = knex({ 
   // connect to your own database here:
   client: 'pg',
@@ -16,6 +17,7 @@ const db = knex({
 });
 
 const app = express();
+
 app.use(cors())
 app.use(express.json()); // latest version of exressJS now comes with Body-Parser!
 app.use(morgan('combined'));
@@ -25,6 +27,7 @@ app.post('/signin', signin.signinAuthentication(db, bcrypt))
 app.post('/register', register.registerAuthentication(db, bcrypt))
 app.get('/profile/:id', auth.requireAuth, (req, res) => { profile.handleProfileGet(req, res, db)})
 app.post('/profile/:id', auth.requireAuth, (req, res) => { profile.handleProfileUpdate(req, res, db)})
+app.post('/profile/:id/profile-image', auth.requireAuth, upload.image.single('profileImage'), (req, res) => { profile.uploadProfileImage(req, res, db)})
 app.put('/image', auth.requireAuth, (req, res) => { image.handleImage(req, res, db)})
 app.post('/imageurl', auth.requireAuth, (req, res) => { image.handleApiCall(req, res)})
 
